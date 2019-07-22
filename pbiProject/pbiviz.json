@@ -1,0 +1,4 @@
+{"visual":{"name":"pbiProject","displayName":"pbiProject","guid":"pbiProject98C7303784804BA5BF4C2D3591D8461B","visualClassName":"Visual",
+    "version":"1.0.0","description":"desc","supportUrl":"hattp","gitHubUrl":"http://github.com"},"apiVersion":"2.6.0","author":{"name":"abz","email":"test@gmail.com"},
+"assets":{"icon":"assets/icon.png"},"externalJS":null,
+"style":"style/visual.less","capabilities":"capabilities.json","dependencies":null,"stringResources":[]}
