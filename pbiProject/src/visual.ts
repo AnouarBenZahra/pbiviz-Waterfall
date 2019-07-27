@@ -73,58 +73,30 @@ export class Visual implements IVisual {
         // remove existing axis and bar
         _this.svg.selectAll('.axis').remove();
         _this.svg.selectAll('.bar').remove();
-
-        // draw x axis
-        // let xAxis = d3.svg.axis()
-        //     .scale(xScale)
-        //     .orient('bottom');
+        //Draw X Axes
+        let xAxis = d3.axisBottom(xScale).
+        tickFormat(function(d){ return d;});
         _this.g
             .append('g')
             .attr('class', 'x axis')
             .style('fill', 'black')
             .attr('transform', `translate(0, ${(gHeight - 1)})`)
-            .call(d3.axisBottom(xScale))
+            .call(xAxis)
             .selectAll('text') // rotate text
             .style('text-anchor', 'end')
             .attr('dx', '-.8em')
             .attr('dy', '-.6em')
             .attr('transform', 'rotate(-90)');
 
-        // draw y axis
-        // let yAxis = d3.svg.axis()
-        //     .scale(yScale)
-        //     .orient('left');
+       //Draw Y Axes
+        let yAxis =d3.axisLeft(yScale);
         _this.g
             .append('g')
             .attr('class', 'y axis')
             .style('fill', 'black')
-            .call(d3.axisBottom(yScale));
+            .call(yAxis);
 
-        // draw bar
-        let shapes = _this.g
-            .append('g')
-            .selectAll('.bar')
-            .data(dat);
-
-        // shapes.enter()
-        //     .append('rect')
-        //     .attr('class', 'bar')
-        //     .attr('fill', 'yellow')
-        //     .attr('stroke', 'black')
-        //     .attr('x', (d) => {
-        //         return xScale(d.Val.toString());
-        //     })
-        //     .attr('width', xScale.rangeBand())
-        //     .attr('y', (d) => {
-        //         return yScale(d.Label);
-        //     })
-        //     .attr('height', (d) => {
-        //         return gHeight - yScale(d.Label);
-        //     });
-
-        // shapes
-        //     .exit()
-
+    
 
     }
     public static converter(options: VisualUpdateOptions): TestItem[] {
