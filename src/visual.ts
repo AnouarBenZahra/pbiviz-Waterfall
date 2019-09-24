@@ -32,9 +32,11 @@ export class Visual implements IVisual {
 
     private svg: d3.Selection<d3.BaseType, any, HTMLElement, any>;
     private g: d3.Selection<d3.BaseType, any, HTMLElement, any>;
-    private margin = { top: 20, right: 20, bottom: 200, left: 70 };
+    private margin = { top:20, right: 120, bottom: 200, left: 70 };
     constructor(options: VisualConstructorOptions) {
-        this.svg = d3.select(options.element).append('svg');
+        this.svg = d3.select(options.element).append('svg')
+        .style("width", 550 + 'px')
+        .style("height", 590 + 'px');
         this.g = this.svg.append('g');
     }
 
@@ -42,31 +44,32 @@ export class Visual implements IVisual {
         let _this = this;
 
         // get height and width from viewport
-        this.svg.attr({
-            width: options.viewport.width,
-            height: options.viewport.height
-        } as any);
+        // this.svg.attr({
+        //    width:options.viewport.width,
+        //     height:options.viewport.height
+        // } as any);
         let gHeight = options.viewport.height
             - _this.margin.top
             - _this.margin.bottom;
         let gWidth = options.viewport.width
             - _this.margin.right
             - _this.margin.left;
-        this.g.attr({
-            width: options.viewport.width,
-            height: options.viewport.height
-        } as any);
+        // this.g.attr({
+        //     width: options.viewport.width,
+        //     height: options.viewport.height
+        // } as any);
         _this.g.attr('transform',
             `translate(${_this.margin.left}, ${_this.margin.top})`);
 
         // convert data format
+        let avg = Visual.avg(options);
         let dat =
-            Visual.converter(options);
+            Visual.converter(options,avg);
 
         // setup d3 scale
         let xScale = d3.scaleBand()
             .domain(dat.map((d) => { return d.Label; }))
-            .range([0, 150]);
+            .range([0, 450]);
         let yMax =
             d3.max(dat, (d) => { return d.Val + 10 });
         let yScale = d3.scaleLinear()
@@ -90,7 +93,11 @@ export class Visual implements IVisual {
             .attr('dx', '-.8em')
             .attr('dy', '-.6em')
             .attr('transform', 'rotate(-90)');
-
+     
+            _this.g.call(d3.zoom().on('zoom', function() {
+                console.log('zoom');
+                _this.g.attr('transform', d3.event.transform);
+            }));
         //Draw Y Axes
         let yAxis = d3.axisLeft(yScale);
         _this.g
@@ -98,8 +105,6 @@ export class Visual implements IVisual {
             .attr('class', 'y axis')
             .style('fill', 'black')
             .call(yAxis);
-
-
 
         //**************************************************************************************************** */
         var cumulative = 0;
@@ -122,14 +127,10 @@ export class Visual implements IVisual {
             return d.Label;
         }));
         yScale.domain([0, d3.max(dat, function (d) {
-            console.log("end", d.end);
+          
             return d.end;
         })]);
 
-        // this.svg.append("g")
-        //     .attr("class", "x axis")
-        //     .attr("transform", "translate(0," + options.viewport.height + ")")
-        //     .call(xAxis);
 
         var ticks = d3.selectAll(".x.axis text").each(function (d, i) {
             if (i < 3) {
@@ -140,10 +141,6 @@ export class Visual implements IVisual {
                 d3.select(this).style("text-anchor", "start");
             }
         });
-
-        // this.svg.append("g")
-        //     .attr("class", "y axis")
-        //     .call(yAxis);
 
         var bar = this.g.selectAll(".bar")
             .data(dat)
@@ -188,13 +185,11 @@ export class Visual implements IVisual {
             .attr("x2", xScale.bandwidth() / (1 - padding) - 5)
             .attr("y2", function (d) {
                 return yScale(d.end)
-            })
- 
-      
+            })    
     }
   
 
-    public static converter(options: VisualUpdateOptions): TestItem[] {
+    public static converter(options: VisualUpdateOptions, converter: any): TestItem[] {
 
         let categorical = options.dataViews[0].categorical;
         let category = categorical.categories[0];
@@ -204,8 +199,7 @@ export class Visual implements IVisual {
 
         let resultData: TestItem[] = [];
         for (let i = 0; i < rows.length; i++) {
-            let row = rows[i];
-            console.log(dataValue.values[i]);
+            let row = rows[i];          
             resultData.push({
                 Label: row.toString(),
                 Val: +dataValue.values[i],
@@ -214,6 +208,62 @@ export class Visual implements IVisual {
                 start: null
             });
         }
+        console.log(resultData);
+        return resultData;
+    }
+
+    public static avg(options: VisualUpdateOptions): any {
+
+        let categorical = options.dataViews[0].categorical;       
+        let dataValue = categorical.values[0];
+        let rows = categorical.categories[0].values;     
+        let avg=0;
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+          if(i != 0 && i!= rows.length)
+          {
+             avg=+dataValue.values[i] ;           
+          }         
+        }
+        let res=avg/(categorical.categories[0].values.length-2);
+        console.log(avg);
+        return res;
+        
+    }
+    public static converter2(options: VisualUpdateOptions, svg:any): TestItem[] {
+
+        let categorical = options.dataViews[0].categorical;
+        let category = categorical.categories[0];
+        let dataValue = categorical.values[0];
+
+        let rows = categorical.categories[0].values;
+
+        let resultData: TestItem[] = [];
+        let avg=0;
+        for (let i = 0; i < rows.length; i++) {
+            let row = rows[i];
+          if(i == 0 || i== rows.length)
+          {
+             avg=+dataValue.values[i];
+            resultData.push({
+                Label: row.toString(),
+                Val: +dataValue.values[i],
+                class: null,
+                end: null,
+                start: null
+            });
+          }
+          else{
+            resultData.push({
+                Label: row.toString(),
+                Val: +dataValue.values[i],
+                class: null,
+                end: null,
+                start: null
+            });
+        }
+        }
+        console.log(resultData);
         return resultData;
     }
     public static percentage(n): number {
@@ -232,6 +282,7 @@ export class Visual implements IVisual {
         }
         return result;
     }
+
 
     private static parseSettings(dataView: DataView): VisualSettings {
         var seting = VisualSettings.parse(dataView) as VisualSettings;
